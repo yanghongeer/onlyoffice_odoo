@@ -13,14 +13,17 @@ import { Many2XAutocomplete } from "@web/views/fields/relational_utils"
 const { Component, useState, onWillStart } = owl
 
 const ROLE_ORDER = {
-  full_access: 0,
+  editor: 0,
   reviewer: 1,
   // eslint-disable-next-line sort-keys
-  comment: 2,
-  form_filling: 3,
-  read_only: 4,
+  form_filling: 2,
   // eslint-disable-next-line sort-keys
-  deny_access: 5,
+  custom_filter: 3,
+  // eslint-disable-next-line sort-keys
+  commenter: 4,
+  viewer: 5,
+  // eslint-disable-next-line sort-keys
+  none: 6,
 }
 
 export class ShareDialog extends Component {
@@ -40,10 +43,10 @@ export class ShareDialog extends Component {
       document: null,
       hasChanges: false,
       initialInternalAccess: null,
-      internalAccess: "deny_access",
+      internalAccess: "none",
       internalAccessRoles: {},
       loading: true,
-      newUserAccess: "full_access",
+      newUserAccess: "editor",
       saving: false,
       userNames: {},
       users: [],
@@ -74,9 +77,9 @@ export class ShareDialog extends Component {
     this.state.usersAccess = this.sortUsersByRole(shareData.users_access)
     this.state.usersAccessBackup = [...this.state.usersAccess]
     this.state.initialInternalAccess = shareData.internal_users
-    this.state.usersAccessRoles = shareData.users_access_roles
+    this.state.usersAccessRoles = this.roleSorting(shareData.users_access_roles)
     this.state.internalAccess = shareData.internal_users
-    this.state.internalAccessRoles = shareData.internal_users_roles
+    this.state.internalAccessRoles = this.roleSorting(shareData.internal_users_roles)
   }
 
   async loadInitialUsers() {
@@ -90,6 +93,12 @@ export class ShareDialog extends Component {
 
   sortUsersByRole = (users) => {
     return [...users].sort((a, b) => ROLE_ORDER[a.role.role] - ROLE_ORDER[b.role.role])
+  }
+
+  roleSorting = (role) => {
+    return Object.entries(role)
+      .sort((a, b) => ROLE_ORDER[a[0]] - ROLE_ORDER[b[0]])
+      .map(([key, value]) => ({ [key]: value }))
   }
 
   getDomain = () => {
@@ -185,7 +194,7 @@ export class ShareDialog extends Component {
   }
 
   resetChanges = () => {
-    this.state.newUserAccess = "full_access"
+    this.state.newUserAccess = "editor"
     this.state.usersAccess = [...this.state.usersAccessBackup]
     this.state.internalAccess = this.state.initialInternalAccess
     this.state.users = []

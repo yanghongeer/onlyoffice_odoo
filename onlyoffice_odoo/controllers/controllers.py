@@ -249,10 +249,10 @@ class Onlyoffice_Connector(http.Controller):
             [("document_id", "=", document.id), ("user_id", "=", request.env.user.id)], limit=1
         )
         if access_user:
-            if access_user.role == "deny_access":
+            if access_user.role == "none":
                 raise AccessError(_("TODO: access denied"))
-            elif access_user.role == "full_access" and can_write:
-                role = "full_access"
+            elif access_user.role == "editor" and can_write:
+                role = "editor"
             else:
                 role = access_user.role
         if not role:
@@ -260,19 +260,19 @@ class Onlyoffice_Connector(http.Controller):
                 [("document_id", "=", document.id)], limit=1
             )
             if access:
-                if access.internal_users == "deny_access":
+                if access.internal_users == "none":
                     raise AccessError(_("TODO: access denied"))
-                elif access.internal_users == "full_access" and can_write:
-                    role = "full_access"
+                elif access.internal_users == "editor" and can_write:
+                    role = "editor"
                 else:
                     role = access.internal_users
 
         if not role:
             raise AccessError(_("TODO: access denied"))
-        elif role == "read_only":
+        elif role == "viewer":
             root_config["editorConfig"]["mode"] = "view"
             root_config["document"]["permissions"]["edit"] = False
-        elif role == "comment":
+        elif role == "commenter":
             root_config["editorConfig"]["mode"] = "edit"
             root_config["document"]["permissions"]["edit"] = False
             root_config["document"]["permissions"]["comment"] = True
@@ -280,13 +280,17 @@ class Onlyoffice_Connector(http.Controller):
             root_config["editorConfig"]["mode"] = "edit"
             root_config["document"]["permissions"]["edit"] = False
             root_config["document"]["permissions"]["review"] = True
-        elif role == "full_access":
+        elif role == "editor":
             root_config["editorConfig"]["mode"] = "edit"
             root_config["document"]["permissions"]["edit"] = True
         elif role == "form_filling":
             root_config["editorConfig"]["mode"] = "edit"
             root_config["document"]["permissions"]["edit"] = False
             root_config["document"]["permissions"]["fillForms"] = True
+        elif role == "custom_filter":
+            root_config["editorConfig"]["mode"] = "edit"
+            root_config["document"]["permissions"]["edit"] = True
+            root_config["document"]["permissions"]["modifyFilter"] = False
 
         return root_config
 

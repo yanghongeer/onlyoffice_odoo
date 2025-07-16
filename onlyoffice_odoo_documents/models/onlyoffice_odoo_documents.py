@@ -13,17 +13,17 @@ class OnlyofficeDocuments(models.Model):
             raise AccessError(_("No document selected for sharing."))
 
         if len(document_id) > 1:
-            raise AccessError(_("Please select only one document for sharing."))
+            raise AccessError(_("Please select only one document for advanced sharing."))
 
         is_admin = self.env.user.has_group("base.group_system")
         document = self.env["documents.document"].browse(document_id)
-        if not is_admin and document.create_uid != self.env.user:
+        if not is_admin and document.owner_id != self.env.user:
             raise AccessError(_("Only the owner or administrator can share documents."))
 
         ext = document.name.split(".")[-1].lower() if "." in document.name else ""
 
         if ext not in ["docx", "xlsx", "pptx", "pdf"]:
-            raise AccessError(_("Incorrect file type for Advanced share, please choose another document."))
+            raise AccessError(_("Incorrect file type for advanced sharing. Please select a different document."))
 
         roles = self._get_available_roles(document.name)
 
@@ -52,9 +52,9 @@ class OnlyofficeDocuments(models.Model):
                 "id": document.id,
                 "text": document.name,
             },
-            "internal_users": access.internal_users if access else "deny_access",
+            "internal_users": access.internal_users if access else "none",
             "internal_users_roles": roles,
-            "link_access": access.link_access if access else "read_only",
+            "link_access": access.link_access if access else "viewer",
             "link_access_roles": roles,
             "users_access": users_access,
             "users_access_roles": roles,
@@ -64,30 +64,34 @@ class OnlyofficeDocuments(models.Model):
         ext = filename.split(".")[-1].lower() if "." in filename else ""
 
         roles = {
-            "deny_access": _("Deny access"),
-            "read_only": _("Read only"),
-            "comment": _("Comment"),
+            "none": _("None"),
+            "viewer": _("Viewer"),
+            "commenter": _("Commenter"),
             "reviewer": _("Reviewer"),
-            "full_access": _("Full access"),
+            "editor": _("Editor"),
             "form_filling": _("Form Filling"),
+            "custom_filter": _("Custom Filter"),
         }
 
         if ext == "docx":
             roles.pop("form_filling", None)
+            roles.pop("custom_filter", None)
         elif ext == "xlsx":
             roles.pop("reviewer", None)
             roles.pop("form_filling", None)
         elif ext == "pptx":
             roles.pop("reviewer", None)
             roles.pop("form_filling", None)
+            roles.pop("custom_filter", None)
         elif ext == "pdf":
-            roles.pop("comment", None)
+            roles.pop("commenter", None)
             roles.pop("reviewer", None)
+            roles.pop("custom_filter", None)
         else:
             roles = {
-                "deny_access": _("Deny access"),
-                "read_only": _("Read only"),
-                "full_access": _("Full access"),
+                "none": _("None"),
+                "viewer": _("Viewer"),
+                "editor": _("Editor"),
             }
 
         return roles
@@ -99,7 +103,7 @@ class OnlyofficeDocuments(models.Model):
             raise AccessError(_("No document selected for sharing."))
 
         if len(document_id) > 1:
-            raise AccessError(_("Please select only one document for sharing."))
+            raise AccessError(_("Please select only one document for advanced sharing."))
 
         is_admin = self.env.user.has_group("base.group_system")
         document = self.env["documents.document"].browse(document_id)
@@ -111,8 +115,8 @@ class OnlyofficeDocuments(models.Model):
             access = self.env["onlyoffice.odoo.documents.access"].create(
                 {
                     "document_id": document_id[0],
-                    "internal_users": vals.get("internal_users", "deny_access"),
-                    "link_access": "read_only",
+                    "internal_users": vals.get("internal_users", "none"),
+                    "link_access": "viewer",
                 }
             )
         else:

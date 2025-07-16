@@ -8,25 +8,27 @@ class OnlyofficeDocumentsAccessUser(models.Model):
     document_id = fields.Many2one("documents.document", required=True, ondelete="cascade")
     internal_users = fields.Selection(
         [
-            ("deny_access", _("Deny access")),
-            ("read_only", _("Read only")),
-            ("comment", _("Comment")),
+            ("none", _("None")),
+            ("viewer", _("Viewer")),
+            ("commenter", _("Commenter")),
             ("reviewer", _("Reviewer")),
-            ("full_access", _("Full access")),
+            ("editor", _("Editor")),
             ("form_filling", _("Form Filling")),
+            ("custom_filter", _("Custom Filter")),
         ],
-        default="deny_access",
+        default="none",
         string="Internal Users Access",
     )
     link_access = fields.Selection(
         [
-            ("deny_access", _("Deny access")),
-            ("read_only", _("Read only")),
-            ("comment", _("Comment")),
+            ("none", _("None")),
+            ("viewer", _("Viewer")),
+            ("commenter", _("Commenter")),
             ("reviewer", _("Reviewer")),
-            ("full_access", _("Full access")),
+            ("editor", _("Editor")),
             ("form_filling", _("Form Filling")),
+            ("custom_filter", _("Custom Filter")),
         ],
-        default="read_only",
+        default="viewer",
         string="Link Access",
     )
