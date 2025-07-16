@@ -10,6 +10,7 @@ export class OnlyofficeKanbanController extends KanbanController {
     this.orm = useService("orm")
     this.notificationService = useService("notification")
     this.dialog = useService("dialog")
+    this.openedFormGallery = false
   }
 
   async _test() {
@@ -17,6 +18,9 @@ export class OnlyofficeKanbanController extends KanbanController {
   }
 
   async openFormGallery() {
-    this.dialog.add(FormGalleryDialog, {})
+    if (!this.openedFormGallery) {
+      this.openedFormGallery = true
+      this.dialog.add(FormGalleryDialog, {}, { onClose: () => (this.openedFormGallery = false) })
+    }
   }
 }
