@@ -136,6 +136,7 @@ class OnlyOfficeTemplate(models.Model):
                 raise UserError(_("Invalid file format.")) from e
         else:
             vals["file"] = base64.encodebytes(file_utils.get_default_file_template(self.env.user.lang, "pdf"))
+            is_pdf_form = True
 
         model = self.env["ir.model"].search([("id", "=", vals["template_model_id"])], limit=1)
         vals["template_model_name"] = model.name
