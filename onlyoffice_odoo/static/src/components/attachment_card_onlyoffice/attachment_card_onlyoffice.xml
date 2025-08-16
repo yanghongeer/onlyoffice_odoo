@@ -11,7 +11,7 @@
       >
         <button
           t-if="onlyofficeCanOpen(attachment)"
-          t-on-click="() => this.openOnlyoffice(attachment)"
+          t-on-click.stop="() => this.openOnlyoffice(attachment)"
           class="btn d-flex justify-content-center align-items-center w-100 h-100 rounded-0"
           t-attf-class="bg-300"
         >
